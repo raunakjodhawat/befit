@@ -1,9 +1,12 @@
 package com.raunakjodhawat.dbloader
 
 import io.circe.parser.decode
-import io.circe.generic.auto._ // For automatic derivation
+import io.circe.jawn.JawnParser
+import io.circe.generic.auto._
+
 import scala.util.Using
 import java.nio.file.Paths
+import scala.io.Source.fromFile
 
 case class SurveyFood(
     description: String,
@@ -23,14 +26,15 @@ case class Nutrient(
 case class RawData(SurveyFoods: Seq[SurveyFood])
 
 object Application {
+  val importantMetrics: Set[String] =
+    Set[String]("Protein", "Carbohydrate, by difference", "Total lipid (fat)")
   def main(args: Array[String]): Unit = {
-    val parser = new io.circe.jawn.JawnParser()
-
+    val parser = new JawnParser()
     Using(
-      scala.io.Source.fromFile(
+      fromFile(
         Paths
           .get(
-            "raw.json"
+            "./src/main/resources/raw.json"
           )
           .toFile
       )
@@ -42,13 +46,11 @@ object Application {
             case Right(rawData) =>
               rawData.SurveyFoods.foreach { surveyFood =>
                 // Process each SurveyFood object individually
-                surveyFood.foodNutrients.foreach { nutrient =>
-                  println(s"Food description: ${surveyFood.description}")
-                  println(s"name: ${nutrient.nutrient.name}")
-                  println(s"unit: ${nutrient.nutrient.unitName}")
-                  println(s"amount: ${nutrient.amount}")
-                // Perform additional processing here
-                }
+                println(s"Description: ${surveyFood.description}")
+                val foodNutrient = surveyFood.foodNutrients.filter(nutrient =>
+                  importantMetrics.contains(nutrient.nutrient.name)
+                )
+                println(foodNutrient)
               }
             case Left(error) =>
               println(s"Error decoding JSON: $error")
