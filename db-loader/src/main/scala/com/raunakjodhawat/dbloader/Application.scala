@@ -30,7 +30,7 @@ object Application {
       scala.io.Source.fromFile(
         Paths
           .get(
-            "/Users/raunakjodhawat/code/befit/db-loader/src/main/resources/raw.json"
+            "raw.json"
           )
           .toFile
       )
