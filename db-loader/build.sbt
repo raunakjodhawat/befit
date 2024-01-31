@@ -16,3 +16,10 @@ libraryDependencies ++= Seq(
 ).map(_ % circeVersion)
 
 libraryDependencies += "dev.zio" %% "zio" % "2.1-RC1"
+val slickVersion = "3.5.0-M4"
+
+libraryDependencies ++= Seq(
+  "com.typesafe.slick" %% "slick" % slickVersion,
+  "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
+  "org.postgresql" % "postgresql" % "42.5.4"
+)
