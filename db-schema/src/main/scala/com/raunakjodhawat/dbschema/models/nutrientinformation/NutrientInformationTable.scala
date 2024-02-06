@@ -1,5 +1,5 @@
-package com.raunakjodhawat.dbloader.models
-import slick.ast.TypedType
+package com.raunakjodhawat.dbschema.models.nutrientinformation
+
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.{ProvenShape, Rep, Tag}
 
