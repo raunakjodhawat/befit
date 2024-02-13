@@ -3,46 +3,45 @@ package com.raunakjodhawat.dbloader
 import com.raunakjodhawat.dbloader.models.NutrientInformationValue
 import com.raunakjodhawat.dbschema.initialize.dbSetup
 import slick.jdbc.PostgresProfile.api._
-import com.raunakjodhawat.dbschema.models.nutrientinformation.{
-  NutrientInformation,
-  NutrientInformationTable
-}
-import zio.ZIO
+import com.raunakjodhawat.dbschema.models.nutrientinformation.NutrientInformation
+import zio.{Unsafe, ZIO}
 
-object DatabaseConfiguration extends App {
-
+object Config {
   private val mapping: Map[String, String] = Map(
     "Protein" -> "protein",
     "Carbohydrate, by difference" -> "carbohydrate",
     "Total lipid (fat)" -> "fat"
   )
-  val nutrientInformationTable: TableQuery[NutrientInformationTable] =
-    TableQuery[NutrientInformationTable]
 
-  val dbEntry = RawFileReader.readFile(
+  val dbEntry: Map[String, NutrientInformationValue] = RawFileReader.readFile(
     "/Users/raunakjodhawat/code/befit/db-loader/src/main/resources/raw.json",
     mapping
   )
+}
+object DatabaseConfiguration extends App {
 
   def insertData(
       dbEntry: Map[String, NutrientInformationValue]
-  ): ZIO[Any, Throwable, Seq[Int]] = // Change the return type
+  ): ZIO[Any, Throwable, Unit] =
     for {
       db <- dbSetup.initialize
-      results <- ZIO.foreachPar(dbEntry) { case (key, value) =>
-        ZIO
-          .fromFuture { ec =>
-            db.run(
-              nutrientInformationTable += NutrientInformation(
-                key,
-                value.protein,
-                value.carbohydrate,
-                value.fat
-              )
-            )
-          }
-          .catchAll(e => ZIO.fail(e))
+      dbEntries = dbEntry.map { case (key, value) =>
+        val nutrientInfo =
+          NutrientInformation(key, value.protein, value.carbohydrate, value.fat)
+        db.run(dbSetup.nutrientInformationTable += nutrientInfo)
       }
-    } yield results
+      result <- ZIO.collectAllPar(
+        dbEntries.map(dbEntry => ZIO.fromFuture(ex => dbEntry))
+      )
+      _ <- ZIO.succeed(result)
+      _ <- dbSetup.closeDB(db)
+    } yield ()
 
+  Unsafe.unsafe { implicit unsafe =>
+    zio.Runtime.default.unsafe
+      .run(
+        insertData(Config.dbEntry)
+      )
+      .getOrThrowFiberFailure()
+  }
 }

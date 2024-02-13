@@ -4,11 +4,15 @@ import com.raunakjodhawat.dbschema.models.nutrientinformation.NutrientInformatio
 import zio._
 import slick.jdbc.PostgresProfile.api._
 
+import scala.annotation.unused
+
+@unused
 object dbSetup {
   private val dbZIO = ZIO.attempt(Database.forConfig("postgres"))
-  private val nutrientInformationTable = TableQuery[NutrientInformationTable]
+  val nutrientInformationTable = TableQuery[NutrientInformationTable]
 
-  def initialize: ZIO[Any, Throwable, Database] = createDB *> clearDB
+  @unused
+  def initialize: ZIO[Any, Throwable, Database] = clearDB *> createDB
   private def createDB: ZIO[Any, Throwable, Database] = (for {
     db <- dbZIO
     updateFork <- ZIO.fromFuture { ex =>
@@ -21,7 +25,6 @@ object dbSetup {
       }
     }.fork
     dbUpdateResult <- updateFork.await
-    _ <- closeDB(db)
   } yield dbUpdateResult match {
     case Exit.Success(_) =>
       ZIO.succeed(println("Database Initialization complete")) *> ZIO.from(db)
@@ -44,7 +47,6 @@ object dbSetup {
       }
     }.fork
     dbUpdateResult <- updateFork.await
-    _ <- closeDB(db)
   } yield dbUpdateResult match {
     case Exit.Success(_) =>
       ZIO.succeed(println("Database cleared")) *> ZIO.from(db)
@@ -55,6 +57,7 @@ object dbSetup {
         new Exception("Failed to clear the DB")
       )
   }).flatMap(x => x)
-  private def closeDB(db: Database): ZIO[Any, Throwable, Unit] =
+  @unused
+  def closeDB(db: Database): ZIO[Any, Throwable, Unit] =
     ZIO.attempt(db.close)
 }
