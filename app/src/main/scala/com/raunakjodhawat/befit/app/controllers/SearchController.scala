@@ -12,16 +12,10 @@ import zio.http.ChannelEvent.{
 }
 import zio.http._
 import io.circe.syntax._
-import slick.jdbc.PostgresProfile
 
 class SearchController(sr: SearchRepository) {
 
-  val socketApp: Handler[
-    PostgresProfile.api.Database,
-    Throwable,
-    WebSocketChannel,
-    Nothing
-  ] =
+  val socketApp: Handler[Database, Throwable, WebSocketChannel, Nothing] =
     Handler.webSocket { channel =>
       channel.receiveAll {
         case Read(WebSocketFrame.Text(text)) => {

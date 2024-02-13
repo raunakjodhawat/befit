@@ -8,9 +8,7 @@ import zio._
 class SearchRepository(dbZIO: ZIO[Any, Throwable, Database]) {
 
   private val nutrientInformation = dbSetup.nutrientInformationTable
-  def searchByPrefix(
-      prefix: String
-  ): ZIO[Database, Throwable, Seq[
+  def searchByPrefix(prefix: String): ZIO[Database, Throwable, Seq[
     NutrientInformationTable#TableElementType
   ]] = for {
     db <- dbZIO
