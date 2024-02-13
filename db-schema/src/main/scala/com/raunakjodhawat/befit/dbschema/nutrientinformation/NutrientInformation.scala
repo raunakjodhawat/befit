@@ -1,4 +1,4 @@
-package com.raunakjodhawat.dbschema.models.nutrientinformation
+package com.raunakjodhawat.befit.dbschema.nutrientinformation
 
 case class NutrientInformation(
     name: String,

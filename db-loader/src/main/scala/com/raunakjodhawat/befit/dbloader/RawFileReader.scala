@@ -1,7 +1,7 @@
-package com.raunakjodhawat.dbloader
+package com.raunakjodhawat.befit.dbloader
 
-import com.raunakjodhawat.dbloader.models.NutrientInformationValue
-import com.raunakjodhawat.dbloader.models.RawFileModel.RawData
+import com.raunakjodhawat.befit.dbloader.models.NutrientInformationValue
+import com.raunakjodhawat.befit.dbloader.models.RawFileModel.RawData
 import io.circe.jawn.JawnParser
 import io.circe.generic.auto._
 import io.circe.parser.decode

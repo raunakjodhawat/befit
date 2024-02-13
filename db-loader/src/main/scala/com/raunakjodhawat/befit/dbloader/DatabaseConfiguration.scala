@@ -1,9 +1,9 @@
-package com.raunakjodhawat.dbloader
+package com.raunakjodhawat.befit.dbloader
 
-import com.raunakjodhawat.dbloader.models.NutrientInformationValue
-import com.raunakjodhawat.dbschema.initialize.dbSetup
+import com.raunakjodhawat.befit.dbloader.models.NutrientInformationValue
+import com.raunakjodhawat.befit.dbschema.initialize.dbSetup
+import com.raunakjodhawat.befit.dbschema.nutrientinformation.NutrientInformation
 import slick.jdbc.PostgresProfile.api._
-import com.raunakjodhawat.dbschema.models.nutrientinformation.NutrientInformation
 import zio.{Unsafe, ZIO}
 
 object Config {

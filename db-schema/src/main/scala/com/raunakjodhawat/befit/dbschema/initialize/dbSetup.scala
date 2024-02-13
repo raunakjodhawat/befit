@@ -1,6 +1,6 @@
-package com.raunakjodhawat.dbschema.initialize
+package com.raunakjodhawat.befit.dbschema.initialize
 
-import com.raunakjodhawat.dbschema.models.nutrientinformation.NutrientInformationTable
+import com.raunakjodhawat.befit.dbschema.nutrientinformation.NutrientInformationTable
 import zio._
 import slick.jdbc.PostgresProfile.api._
 

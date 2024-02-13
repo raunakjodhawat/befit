@@ -1,4 +1,4 @@
-package com.raunakjodhawat.dbschema.models.nutrientinformation
+package com.raunakjodhawat.befit.dbschema.nutrientinformation
 
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.{ProvenShape, Rep, Tag}

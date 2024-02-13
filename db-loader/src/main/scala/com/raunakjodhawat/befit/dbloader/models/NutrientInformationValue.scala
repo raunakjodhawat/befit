@@ -1,4 +1,4 @@
-package com.raunakjodhawat.dbloader.models
+package com.raunakjodhawat.befit.dbloader.models
 
 case class NutrientInformationValue(
     protein: Option[Double] = None,

@@ -1,4 +1,4 @@
-package com.raunakjodhawat.dbloader.models
+package com.raunakjodhawat.befit.dbloader.models
 
 object RawFileModel {
   case class SurveyFood(
