@@ -16,6 +16,7 @@ lazy val appModule = (project in file("app"))
   .settings(
     name := "app"
   )
+  .dependsOn(dbSchemaModule)
 
 lazy val root = (project in file("."))
   .settings(

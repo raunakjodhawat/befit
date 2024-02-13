@@ -1,6 +1,7 @@
 package com.raunakjodhawat.befit.dbschema.initialize
 
 import com.raunakjodhawat.befit.dbschema.nutrientinformation.NutrientInformationTable
+import slick.jdbc.PostgresProfile
 import zio._
 import slick.jdbc.PostgresProfile.api._
 
@@ -8,8 +9,10 @@ import scala.annotation.unused
 
 @unused
 object dbSetup {
-  private val dbZIO = ZIO.attempt(Database.forConfig("postgres"))
-  val nutrientInformationTable = TableQuery[NutrientInformationTable]
+  val dbZIO: Task[PostgresProfile.backend.JdbcDatabaseDef] =
+    ZIO.attempt(Database.forConfig("postgres"))
+  val nutrientInformationTable: TableQuery[NutrientInformationTable] =
+    TableQuery[NutrientInformationTable]
 
   @unused
   def initialize: ZIO[Any, Throwable, Database] = clearDB *> createDB

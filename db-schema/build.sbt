@@ -6,6 +6,7 @@ val slickVersion = "3.5.0-M4"
 val postgresVersion = "42.5.4"
 val zioVersion = "2.1-RC1"
 val zioHttpVersion = "3.0.0-RC2"
+val circeVersion = "0.14.5"
 lazy val dbSchemaModule = (project in file("."))
   .settings(
     name := "db-schema",
@@ -14,6 +15,10 @@ lazy val dbSchemaModule = (project in file("."))
       "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
       "org.postgresql" % "postgresql" % postgresVersion,
       "dev.zio" %% "zio" % zioVersion,
-      "dev.zio" %% "zio-http" % zioHttpVersion
+      "dev.zio" %% "zio-http" % zioHttpVersion,
+      // json
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      "io.circe" %% "circe-parser" % circeVersion
     )
   )
