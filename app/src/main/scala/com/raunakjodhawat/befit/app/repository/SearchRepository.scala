@@ -22,4 +22,19 @@ class SearchRepository(dbZIO: ZIO[Any, Throwable, Database]) {
     }
     _ <- ZIO.from(db.close())
   } yield prefixMatches
+
+  def searchById(id: Long): ZIO[Database, Throwable, Seq[
+    NutrientInformationTable#TableElementType
+  ]] = for {
+    db <- dbZIO
+    prefixMatches <- ZIO.fromFuture { ex =>
+      db.run(
+        nutrientInformation
+          .filter(_.creator === id)
+          .take(10)
+          .result
+      )
+    }
+    _ <- ZIO.from(db.close())
+  } yield prefixMatches
 }

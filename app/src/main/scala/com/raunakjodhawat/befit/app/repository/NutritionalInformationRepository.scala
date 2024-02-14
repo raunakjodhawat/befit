@@ -11,7 +11,9 @@ class NutritionalInformationRepository(dbZIO: ZIO[Any, Throwable, Database]) {
       name: String,
       protein: Option[Double],
       fat: Option[Double],
-      carbs: Option[Double]
+      carbs: Option[Double],
+      unit: String,
+      creator: Long
   ): ZIO[Database, Throwable, Int] = {
     val nutrientInformation = dbSetup.nutrientInformationTable
     for {
@@ -19,10 +21,13 @@ class NutritionalInformationRepository(dbZIO: ZIO[Any, Throwable, Database]) {
       insertResult <- ZIO.fromFuture { ex =>
         db.run(
           nutrientInformation += NutrientInformation(
+            id = 1L,
             name = name,
             protein = protein,
             fat = fat,
-            carbohydrate = carbs
+            carbohydrate = carbs,
+            unit = unit,
+            creator = creator
           )
         )
       }

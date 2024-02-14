@@ -26,7 +26,9 @@ class NutritionalInformationController(nis: NutritionalInformationRepository) {
               nutrientInformation.name,
               nutrientInformation.protein,
               nutrientInformation.fat,
-              nutrientInformation.carbohydrate
+              nutrientInformation.carbohydrate,
+              nutrientInformation.unit,
+              nutrientInformation.creator
             ) *> ZIO.succeed(
               Response.ok
             )
