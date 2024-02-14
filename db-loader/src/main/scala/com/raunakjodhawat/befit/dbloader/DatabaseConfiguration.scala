@@ -27,7 +27,15 @@ object DatabaseConfiguration extends App {
       db <- dbSetup.initialize
       dbEntries = dbEntry.map { case (key, value) =>
         val nutrientInfo =
-          NutrientInformation(key, value.protein, value.carbohydrate, value.fat)
+          NutrientInformation(
+            id = 1L,
+            name = key,
+            protein = value.protein,
+            carbohydrate = value.carbohydrate,
+            fat = value.fat,
+            unit = value.unit,
+            creator = 1L
+          )
         db.run(dbSetup.nutrientInformationTable += nutrientInfo)
       }
       result <- ZIO.collectAllPar(

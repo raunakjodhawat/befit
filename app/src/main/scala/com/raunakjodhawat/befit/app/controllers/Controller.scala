@@ -7,7 +7,6 @@ import com.raunakjodhawat.befit.app.repository.{
 import slick.jdbc.PostgresProfile.api._
 import zio._
 import zio.http._
-import zio.prelude.data.Optional.AllValuesAreNullable
 
 object Controller {
   def apply(db: ZIO[Any, Throwable, Database]): HttpApp[Database, Response] = {

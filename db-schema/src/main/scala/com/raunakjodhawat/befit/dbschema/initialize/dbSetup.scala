@@ -1,18 +1,37 @@
 package com.raunakjodhawat.befit.dbschema.initialize
 
 import com.raunakjodhawat.befit.dbschema.nutrientinformation.NutrientInformationTable
+import com.raunakjodhawat.befit.dbschema.user.{
+  User,
+  UserHistoryTable,
+  UserTable
+}
 import slick.jdbc.PostgresProfile
 import zio._
 import slick.jdbc.PostgresProfile.api._
 
 import scala.annotation.unused
 
+object Tester extends App {
+  Unsafe.unsafe { implicit unsafe =>
+    zio.Runtime.default.unsafe
+      .run(
+        dbSetup.initialize
+      )
+      .getOrThrowFiberFailure()
+  }
+}
 @unused
 object dbSetup {
   val dbZIO: Task[PostgresProfile.backend.JdbcDatabaseDef] =
     ZIO.attempt(Database.forConfig("postgres"))
   val nutrientInformationTable: TableQuery[NutrientInformationTable] =
     TableQuery[NutrientInformationTable]
+  val userTable: TableQuery[UserTable] =
+    TableQuery[UserTable]
+  val userHistoryTable: TableQuery[UserHistoryTable] =
+    TableQuery[UserHistoryTable]
+  private val adminUser: User = User(1L)
 
   @unused
   def initialize: ZIO[Any, Throwable, Database] = clearDB *> createDB
@@ -22,7 +41,10 @@ object dbSetup {
       {
         db.run(
           DBIO.seq(
-            nutrientInformationTable.schema.create
+            userTable.schema.create,
+            nutrientInformationTable.schema.create,
+            userHistoryTable.schema.create,
+            userTable += adminUser
           )
         )
       }
@@ -44,7 +66,9 @@ object dbSetup {
       {
         db.run(
           DBIO.seq(
-            nutrientInformationTable.schema.dropIfExists
+            userHistoryTable.schema.dropIfExists,
+            nutrientInformationTable.schema.dropIfExists,
+            userTable.schema.dropIfExists
           )
         )
       }
