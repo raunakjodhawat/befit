@@ -3,8 +3,6 @@ package com.raunakjodhawat.befit.dbschema.user
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.{ProvenShape, Rep, Tag}
 
-import java.util.Date
-import JsonEncoderDecoder.dateMapping
 import com.raunakjodhawat.befit.dbschema.initialize.dbSetup
 
 class UserHistoryTable(tag: Tag)
@@ -31,9 +29,8 @@ class UserHistoryTable(tag: Tag)
     onDelete = ForeignKeyAction.Cascade
   )
   def qty: Rep[Double] = column[Double]("QTY")
-  def created_at: Rep[Option[Date]] = column[Option[Date]]("CREATED_AT")
-  def updated_at: Rep[Option[Date]] = column[Option[Date]]("UPDATED_AT")
+  def updated_at: Rep[String] = column[String]("UPDATED_AT")
   override def * : ProvenShape[UserHistory] = {
-    (id, u_id, ni_id, qty, created_at, updated_at).mapTo[UserHistory]
+    (id, u_id, ni_id, qty, updated_at).mapTo[UserHistory]
   }
 }

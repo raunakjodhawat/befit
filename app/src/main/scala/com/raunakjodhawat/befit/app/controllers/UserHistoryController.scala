@@ -11,7 +11,7 @@ import com.raunakjodhawat.befit.app.repository.{
   UserHistoryRepository
 }
 import com.raunakjodhawat.befit.app.models.JsonEncoderDecoder._
-import com.raunakjodhawat.befit.dbschema.user.JsonEncoderDecoder.sdf
+
 import zio.ZIO
 import zio.http.{Body, Response}
 import io.circe.syntax.EncoderOps
@@ -70,9 +70,8 @@ class UserHistoryController(
   }
   def getUserHistoryForADay(
       userId: Long,
-      incomingDate: String
+      date: String
   ): ZIO[Database, Throwable, Response] = {
-    val date = sdf.parse(incomingDate + " 00:00:00")
     for {
       userHistory <- uhr.getUserHistoryByUserIdByDate(userId, date)
       nutritionalInformationZIO = userHistory.map(x =>
