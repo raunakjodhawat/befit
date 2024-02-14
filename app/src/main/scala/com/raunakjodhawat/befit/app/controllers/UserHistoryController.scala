@@ -57,7 +57,7 @@ class UserHistoryController(
           },
           userHistory => {
             uhr.updateUserHistory(
-              u_h_id = userHistory.u_id,
+              u_h_id = userHistory.u_h_id,
               u_id = userHistory.u_id,
               ni_id = userHistory.ni_id,
               quantity = userHistory.quantity
@@ -68,6 +68,7 @@ class UserHistoryController(
       Response.ok
     )
   }
+
   def getUserHistoryForADay(
       userId: Long,
       date: String
@@ -75,31 +76,34 @@ class UserHistoryController(
     for {
       userHistory <- uhr.getUserHistoryByUserIdByDate(userId, date)
       nutritionalInformationZIO = userHistory.map(x =>
-        nir.getNutritionalInformationById(x.ni_id)
+        nir.getNutritionalInformationById(x.ni_id) -> x.qty
       )
-      nutritionalInformation <- ZIO.collectAll(nutritionalInformationZIO)
+      (infoZIOs, quantities) = nutritionalInformationZIO.unzip
+      nutritionalInformation <- ZIO.collectAll(infoZIOs)
+      nutritionalInformationWithQty = nutritionalInformation.zip(quantities)
     } yield {
-      val qty = userHistory.map(_.qty)
-      val proteinContent: Double = nutritionalInformation
-        .flatMap(_.flatMap(_.protein))
-        .sum
-      val fatContent: Double = nutritionalInformation
-        .flatMap(_.flatMap(_.fat))
-        .sum
-      val carbohydrateContent: Double = nutritionalInformation
-        .flatMap(_.flatMap(_.carbohydrate))
-        .sum
-      val data: Seq[UserHistoryResponseData] = nutritionalInformation.flatMap(
-        _.map(x =>
-          UserHistoryResponseData(
-            x.name,
-            x.protein,
-            x.carbohydrate,
-            x.fat,
-            x.unit
+      val proteinContent: Double = nutritionalInformationWithQty.flatMap {
+        case (info, qty) => info.flatMap(_.protein).map(_ * qty)
+      }.sum
+      val fatContent: Double = nutritionalInformationWithQty.flatMap {
+        case (info, qty) => info.flatMap(_.fat).map(_ * qty)
+      }.sum
+      val carbohydrateContent: Double = nutritionalInformationWithQty.flatMap {
+        case (info, qty) => info.flatMap(_.carbohydrate).map(_ * qty)
+      }.sum
+      val data: Seq[UserHistoryResponseData] =
+        nutritionalInformationWithQty.flatMap { case (info, qty) =>
+          info.map(x =>
+            UserHistoryResponseData(
+              name = x.name,
+              protein = x.protein,
+              carbohydrate = x.carbohydrate,
+              fat = x.fat,
+              quantity = qty,
+              unit = x.unit
+            )
           )
-        )
-      )
+        }
       val response = UserHistoryResponse(
         proteinContent,
         carbohydrateContent,

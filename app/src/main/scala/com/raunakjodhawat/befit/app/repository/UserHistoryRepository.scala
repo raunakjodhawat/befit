@@ -70,14 +70,15 @@ class UserHistoryRepository(dbZIO: ZIO[Any, Throwable, Database]) {
       date: String
   ): ZIO[Database, Throwable, Seq[UserHistory]] = for {
     db <- dbZIO
-    result <- ZIO.fromFuture { ex =>
-      db.run(
-        dbSetup.userHistoryTable
-          .filter(_.u_id === u_id)
-          .filter(_.updated_at === date)
-          .result
-      )
-    }
+    result <- ZIO
+      .fromFuture { ex =>
+        db.run(
+          dbSetup.userHistoryTable
+            .filter(_.u_id === u_id)
+            .filter(_.updated_at === date)
+            .result
+        )
+      }
     _ <- ZIO.from(db.close())
   } yield result
 }

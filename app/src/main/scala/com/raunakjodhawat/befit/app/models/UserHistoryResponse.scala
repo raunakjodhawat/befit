@@ -17,6 +17,7 @@ case class UserHistoryResponseData(
     protein: Option[Double],
     carbohydrate: Option[Double],
     fat: Option[Double],
+    quantity: Double,
     unit: String
 )
 case class UserHistoryResponse(
