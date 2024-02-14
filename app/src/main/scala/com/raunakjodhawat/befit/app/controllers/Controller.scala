@@ -23,8 +23,12 @@ object Controller {
           new SearchController(sr).socketApp.toResponse
         case Method.GET -> base_path / "search" / long(id) =>
           new SearchController(sr).searchById(id)
-        case req @ Method.POST -> base_path / "create" / "user" =>
+        case req @ Method.POST -> base_path / "user" =>
           new UserController(ur).createUser(req.body)
+        case Method.GET -> base_path / "user" / long(id) =>
+          new UserController(ur).getUserInfo(id)
+        case Method.DELETE -> base_path / "user" / long(id) =>
+          new UserController(ur).deleteUserById(id)
 
         case req @ Method.POST -> base_path / "history" =>
           new UserHistoryController(uhr, nir).createNewUserHistory(req.body)
