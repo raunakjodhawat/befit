@@ -10,7 +10,7 @@ import slick.jdbc.PostgresProfile.api._
 import java.text.SimpleDateFormat
 
 object JsonEncoderDecoder {
-  private val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+  val sdf: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
   implicit val encodeDate: Encoder[Date] =
     Encoder.encodeString.contramap[Date](_.getTime.toString)

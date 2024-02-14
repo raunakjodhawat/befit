@@ -9,6 +9,9 @@ Main Backend application for the Nutritional Information API
             "query": "food item"
         }
         ```
-2. `/api/v1/search/1` - Search by creator id
-3. `/api/v1/create/user` - create a user
-4. `/api/v1/create/food` - create a new entry for nutritional information
+2. GET: `/api/v1/search/:id` - Search by creator id
+3. POST: `/api/v1/create/user` - create a user
+4. POST: `/api/v1/create/food` - create a new entry for nutritional information
+5. GET: `/api/v1/history/:id/:date` - get the history of a user
+6. POST: `/api/v1/history` - add a new entry to the history of a user
+7. PUT: `/api/v1/history` - update a users history

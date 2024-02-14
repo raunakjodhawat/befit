@@ -40,4 +40,22 @@ class NutritionalInformationRepository(dbZIO: ZIO[Any, Throwable, Database]) {
       _ <- ZIO.from(db.close())
     } yield result
   }
+
+  def getNutritionalInformationById(
+      id: Long
+  ): ZIO[Database, Throwable, Option[NutrientInformation]] = {
+    val nutrientInformation = dbSetup.nutrientInformationTable
+    for {
+      db <- dbZIO
+      result <- ZIO.fromFuture { ex =>
+        db.run(
+          nutrientInformation
+            .filter(_.id === id)
+            .result
+            .headOption
+        )
+      }
+      _ <- ZIO.from(db.close())
+    } yield result
+  }
 }

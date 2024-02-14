@@ -3,6 +3,7 @@ package com.raunakjodhawat.befit.app.controllers
 import com.raunakjodhawat.befit.app.repository.{
   NutritionalInformationRepository,
   SearchRepository,
+  UserHistoryRepository,
   UserRepository
 }
 import slick.jdbc.PostgresProfile.api._
@@ -13,8 +14,9 @@ object Controller {
   def apply(db: ZIO[Any, Throwable, Database]): HttpApp[Database, Response] = {
     val base_path: Path = Root / "api" / "v1"
     val sr = new SearchRepository(db)
-    val nis = new NutritionalInformationRepository(db)
-    var ur = new UserRepository(db)
+    val nir = new NutritionalInformationRepository(db)
+    val ur = new UserRepository(db)
+    val uhr = new UserHistoryRepository(db)
     Http
       .collectZIO[Request] {
         case Method.GET -> base_path / "search" / "ws" =>
@@ -23,8 +25,16 @@ object Controller {
           new SearchController(sr).searchById(id)
         case req @ Method.POST -> base_path / "create" / "user" =>
           new UserController(ur).createUser(req.body)
+
+        case req @ Method.POST -> base_path / "history" =>
+          new UserHistoryController(uhr, nir).createNewUserHistory(req.body)
+        case req @ Method.PUT -> base_path / "history" =>
+          new UserHistoryController(uhr, nir).updateUserHistory(req.body)
+        case Method.GET -> base_path / "history" / long(id) / date =>
+          new UserHistoryController(uhr, nir).getUserHistoryForADay(id, date)
+
         case req @ Method.POST -> base_path / "create" / "food" =>
-          new NutritionalInformationController(nis)
+          new NutritionalInformationController(nir)
             .createNewNutritionalInformation(req.body)
       }
       .mapError(err =>
