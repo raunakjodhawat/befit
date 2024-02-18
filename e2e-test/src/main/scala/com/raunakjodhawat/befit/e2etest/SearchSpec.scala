@@ -1,15 +1,13 @@
 package com.raunakjodhawat.befit.e2etest
 
-import com.raunakjodhawat.befit.dbschema.nutrientinformation.NutrientInformation
 import com.raunakjodhawat.befit.dbschema.nutrientinformation.JsonEncoderDecoder._
-import zio.ZIO
-
-import scala.util.{Failure, Success}
+import com.raunakjodhawat.befit.dbschema.nutrientinformation.NutrientInformation
 import io.circe.parser.decode
 import net.domlom.websocket._
 import net.domlom.websocket.model.Websocket
+import zio.ZIO
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class SearchSpec {
   var recordsReturned = 0

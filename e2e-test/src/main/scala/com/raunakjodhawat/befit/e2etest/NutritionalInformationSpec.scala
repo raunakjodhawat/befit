@@ -1,8 +1,8 @@
 package com.raunakjodhawat.befit.e2etest
-import com.raunakjodhawat.befit.dbschema.nutrientinformation.NutrientInformation
 import com.raunakjodhawat.befit.dbschema.nutrientinformation.JsonEncoderDecoder._
-import io.circe.syntax.EncoderOps
+import com.raunakjodhawat.befit.dbschema.nutrientinformation.NutrientInformation
 import io.circe.parser.decode
+import io.circe.syntax.EncoderOps
 import zio.ZIO
 import zio.http.Client
 
@@ -10,7 +10,7 @@ object NutritionalInformationSpec {
   def getNutritionalInformation(c_id: Long): NutrientInformation =
     NutrientInformation(
       id = 1L,
-      name = "some-100",
+      name = "protein is life",
       protein = Some(100),
       carbohydrate = Some(100),
       fat = Some(100),

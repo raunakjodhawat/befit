@@ -11,20 +11,12 @@ import zio._
 import slick.jdbc.PostgresProfile.api._
 
 import scala.annotation.unused
+import scala.util.Properties
 
-object Tester extends App {
-  Unsafe.unsafe { implicit unsafe =>
-    zio.Runtime.default.unsafe
-      .run(
-        dbSetup.initialize
-      )
-      .getOrThrowFiberFailure()
-  }
-}
 @unused
 object dbSetup {
   val dbZIO: Task[PostgresProfile.backend.JdbcDatabaseDef] =
-    ZIO.attempt(Database.forConfig("postgres"))
+    ZIO.attempt(Database.forConfig(Properties.envOrElse("DBPATH", "postgres")))
   val nutrientInformationTable: TableQuery[NutrientInformationTable] =
     TableQuery[NutrientInformationTable]
   val userTable: TableQuery[UserTable] =

@@ -1,11 +1,11 @@
 package com.raunakjodhawat.befit.e2etest
 
-import com.raunakjodhawat.befit.dbschema.user.User
 import com.raunakjodhawat.befit.dbschema.user.JsonEncoderDecoder._
-import zio._
-import zio.http._
+import com.raunakjodhawat.befit.dbschema.user.User
 import io.circe.parser.decode
 import io.circe.syntax.EncoderOps
+import zio._
+import zio.http._
 
 object UserSpec {
   val user: User = User(1)

@@ -4,3 +4,6 @@ project/project
 project/target
 target
 db-loader/src/main/resources/raw.json
+db
+.DS_Store
+e2e-test/db

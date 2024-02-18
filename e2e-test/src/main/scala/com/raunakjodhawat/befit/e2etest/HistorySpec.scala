@@ -1,12 +1,9 @@
 package com.raunakjodhawat.befit.e2etest
 
-import com.raunakjodhawat.befit.dbschema.{
-  UserHistoryIncomingData,
-  UserHistoryUpdateData
-}
 import com.raunakjodhawat.befit.dbschema.JsonEncoderDecoder._
 import com.raunakjodhawat.befit.dbschema.user.JsonEncoderDecoder._
 import com.raunakjodhawat.befit.dbschema.user.UserHistory
+import com.raunakjodhawat.befit.dbschema.{UserHistoryIncomingData, UserHistoryUpdateData}
 import io.circe.parser.decode
 import io.circe.syntax.EncoderOps
 import zio.ZIO

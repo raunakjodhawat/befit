@@ -13,6 +13,12 @@ object Application extends ZIOAppDefault {
   val dbZIO: Task[PostgresProfile.backend.JdbcDatabaseDef] = dbSetup.dbZIO
   private val app: HttpApp[Database, Response] = Controller(dbZIO)
 
+  def runWithPort(
+      port: Int = 8080
+  ): ZIO[Any with ZIOAppArgs with Scope, Any, Any] =
+    Server
+      .serve(app)
+      .provide(Server.defaultWithPort(port), ZLayer.fromZIO(dbZIO))
   override def run: ZIO[Any with ZIOAppArgs with Scope, Any, Any] =
-    Server.serve(app).provide(Server.default, ZLayer.fromZIO(dbZIO))
+    runWithPort()
 }
