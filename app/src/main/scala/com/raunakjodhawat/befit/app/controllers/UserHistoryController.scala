@@ -11,17 +11,18 @@ import com.raunakjodhawat.befit.app.repository.{
   UserHistoryRepository
 }
 import com.raunakjodhawat.befit.app.models.JsonEncoderDecoder._
-
-import zio.ZIO
-import zio.http.{Body, Response}
+import com.raunakjodhawat.befit.dbschema.user.JsonEncoderDecoder._
 import io.circe.syntax.EncoderOps
 import io.circe.parser.decode
 import slick.jdbc.PostgresProfile.api._
+import zio._
+import zio.http._
+
 class UserHistoryController(
     uhr: UserHistoryRepository,
     nir: NutritionalInformationRepository
 ) {
-  def createNewUserHistory(
+  def createHistory(
       body: Body
   ): ZIO[Database, Throwable, Response] = {
     body.asString
@@ -32,20 +33,22 @@ class UserHistoryController(
             ZIO.fail(new Exception(s"Error decoding, ${error.getMessage}"))
           },
           userHistory => {
-            uhr.createNewUserHistory(
-              u_id = userHistory.u_id,
-              ni_id = userHistory.ni_id,
-              quantity = userHistory.quantity
-            )
+            uhr
+              .createNewUserHistory(
+                u_id = userHistory.u_id,
+                ni_id = userHistory.ni_id,
+                quantity = userHistory.quantity
+              )
+              .fold(
+                _ => Response.status(Status.BadRequest),
+                newHistory => Response.json(newHistory.asJson.toString())
+              )
           }
         )
-      ) *> ZIO.succeed(
-      Response.ok
-    )
-
+      )
   }
 
-  def updateUserHistory(
+  def updateHistory(
       body: Body
   ): ZIO[Database, Throwable, Response] = {
     body.asString
@@ -61,12 +64,10 @@ class UserHistoryController(
               u_id = userHistory.u_id,
               ni_id = userHistory.ni_id,
               quantity = userHistory.quantity
-            )
+            ) *> ZIO.succeed(Response.json(userHistory.asJson.toString()))
           }
         )
-      ) *> ZIO.succeed(
-      Response.ok
-    )
+      )
   }
 
   def getUserHistoryForADay(
@@ -74,7 +75,7 @@ class UserHistoryController(
       date: String
   ): ZIO[Database, Throwable, Response] = {
     for {
-      userHistory <- uhr.getUserHistoryByUserIdByDate(userId, date)
+      userHistory <- uhr.getUserHistoryByUserIdAndDate(userId, date)
       nutritionalInformationZIO = userHistory.map(x =>
         nir.getNutritionalInformationById(x.ni_id) -> x.qty
       )
@@ -83,25 +84,23 @@ class UserHistoryController(
       nutritionalInformationWithQty = nutritionalInformation.zip(quantities)
     } yield {
       val proteinContent: Double = nutritionalInformationWithQty.flatMap {
-        case (info, qty) => info.flatMap(_.protein).map(_ * qty)
+        case (info, qty) => info.protein.map(_ * qty)
       }.sum
       val fatContent: Double = nutritionalInformationWithQty.flatMap {
-        case (info, qty) => info.flatMap(_.fat).map(_ * qty)
+        case (info, qty) => info.fat.map(_ * qty)
       }.sum
       val carbohydrateContent: Double = nutritionalInformationWithQty.flatMap {
-        case (info, qty) => info.flatMap(_.carbohydrate).map(_ * qty)
+        case (info, qty) => info.carbohydrate.map(_ * qty)
       }.sum
       val data: Seq[UserHistoryResponseData] =
-        nutritionalInformationWithQty.flatMap { case (info, qty) =>
-          info.map(x =>
-            UserHistoryResponseData(
-              name = x.name,
-              protein = x.protein,
-              carbohydrate = x.carbohydrate,
-              fat = x.fat,
-              quantity = qty,
-              unit = x.unit
-            )
+        nutritionalInformationWithQty.map { case (info, qty) =>
+          UserHistoryResponseData(
+            name = info.name,
+            protein = info.protein,
+            carbohydrate = info.carbohydrate,
+            fat = info.fat,
+            quantity = qty,
+            unit = info.unit
           )
         }
       val response = UserHistoryResponse(
@@ -112,6 +111,26 @@ class UserHistoryController(
       )
       Response.json(response.asJson.toString())
     }
+  }
+
+  def getUserHistoryById(
+      u_h_id: Long
+  ): ZIO[Database, Throwable, Response] = {
+    uhr
+      .getUserHistoryById(u_h_id)
+      .fold(
+        _ => Response.status(Status.NotFound),
+        userHistory => Response.json(userHistory.asJson.toString())
+      )
+  }
+
+  def deleteHistoryByIdAndCreator(
+      u_h_id: Long,
+      u_id: Long
+  ): ZIO[Database, Throwable, Response] = {
+    uhr.deleteUserHistory(u_h_id, u_id) *> ZIO.succeed(
+      Response.ok
+    )
   }
 
 }

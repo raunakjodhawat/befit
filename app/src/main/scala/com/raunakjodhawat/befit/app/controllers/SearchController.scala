@@ -13,10 +13,9 @@ import zio.http.ChannelEvent.{
 import zio.http._
 import io.circe.syntax._
 
-import scala.util.{Success, Try}
-
-class SearchController(sr: SearchRepository) {
-
+class SearchController(
+    sr: SearchRepository
+) {
   val socketApp: Handler[Database, Throwable, WebSocketChannel, Nothing] =
     Handler.webSocket { channel =>
       channel.receiveAll {
@@ -46,11 +45,5 @@ class SearchController(sr: SearchRepository) {
     }
   private def searchByPrefix(text: String): ZIO[Database, Throwable, String] = {
     sr.searchByPrefix(text).map(_.asJson.toString())
-  }
-
-  def searchById(text: Long): ZIO[Database, Throwable, Response] = {
-    for {
-      u <- sr.searchById(text)
-    } yield Response.json(u.asJson.toString())
   }
 }

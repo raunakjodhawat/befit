@@ -5,7 +5,6 @@ import com.raunakjodhawat.befit.dbschema.nutrientinformation.JsonEncoderDecoder.
 import zio.ZIO
 
 import scala.util.{Failure, Success}
-
 import io.circe.parser.decode
 import net.domlom.websocket._
 import net.domlom.websocket.model.Websocket
@@ -30,9 +29,9 @@ class SearchSpec {
   }
   val socket: Websocket = Websocket(wsBasePath + "/search/ws", behavior)
 
-  def runSearchFlow: ZIO[Any, Throwable, Unit] = ZIO.fromTry {
+  def runWSSearchFlow: ZIO[Any, Throwable, Unit] = ZIO.fromTry {
     for {
-      _ <- Try(println("Running search flow"))
+      _ <- Try(println("Running search flow with websocket"))
       _ <- socket.connect()
       _ <- socket.send("protein")
       _ = Thread.sleep(1000)

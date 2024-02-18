@@ -9,10 +9,11 @@ import io.circe.syntax.EncoderOps
 
 object UserSpec {
   val user: User = User(1)
-  def runUserFlow: ZIO[Client, Throwable, Unit] = {
+
+  def createUser: ZIO[Client, Throwable, Long] = {
     for {
       client <- ZIO.service[Client]
-      _ <- ZIO.succeed(println("Running user flow"))
+      _ <- ZIO.succeed(println("Creating user"))
       createUserResponse <- client
         .url(createURL(basePath + "/user"))
         .post(
@@ -26,32 +27,49 @@ object UserSpec {
           _.fold(error => ZIO.fail(error), user => ZIO.succeed(user.id))
         )
       _ <- ZIO.succeed(println("Successfully created user " + userId))
+    } yield userId
+  }
+
+  def deleteUserById(id: Long): ZIO[Client, Throwable, Unit] = {
+    for {
+      client <- ZIO.service[Client]
+      _ <- ZIO.succeed(println("Deleting user"))
       _ <- client
-        .url(createURL(basePath + s"/user/$userId"))
-        .get
-        .mapError(error =>
-          new Exception(s"Error getting user, ${error.getMessage}")
-        )
-      _ <- ZIO.succeed(println("Able to query recently created user"))
-      _ <- client
-        .url(createURL(basePath + s"/user/$userId"))
+        .url(createURL(basePath + s"/user/$id"))
         .delete
         .mapError(error =>
           new Exception(s"Error deleting user, ${error.getMessage}")
         )
       _ <- ZIO.succeed(
-        println(s"Able to delete recently created user, with userId = $userId")
+        println(s"Able to delete user, with userId = $id")
       )
+    } yield ()
+  }
+
+  def getUserById(id: Long): ZIO[Client, Throwable, Unit] = {
+    for {
+      client <- ZIO.service[Client]
+      _ <- ZIO.succeed(println("Getting user"))
       _ <- client
-        .url(createURL(basePath + s"/user/$userId"))
+        .url(createURL(basePath + s"/user/$id"))
         .get
-        .fold(
-          error => ZIO.fail(error),
-          response =>
-            if (response.status.code == 404) ZIO.succeed(response)
-            else ZIO.fail(new Exception("User not deleted"))
+        .mapError(error =>
+          new Exception(s"Error getting user, ${error.getMessage}")
         )
-      _ <- ZIO.succeed(println("User deleted successfully"))
+      _ <- ZIO.succeed(
+        println(s"Able to get user, with userId = $id")
+      )
+    } yield ()
+  }
+  def runUserFlow: ZIO[Client, Throwable, Unit] = {
+    for {
+      userId <- createUser
+      _ <- getUserById(userId)
+      _ <- deleteUserById(userId)
+      _ <- getUserById(userId).fold(
+        _ => ZIO.succeed(()),
+        _ => ZIO.fail(new Exception("User not deleted"))
+      )
     } yield ()
   }
 }
