@@ -1,4 +1,4 @@
-package com.raunakjodhawat.befit.app.models
+package com.raunakjodhawat.befit.dbschema
 
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}

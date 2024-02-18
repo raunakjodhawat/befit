@@ -1,16 +1,15 @@
 package com.raunakjodhawat.befit.app.controllers
 
-import com.raunakjodhawat.befit.app.models.{
-  UserHistoryIncomingData,
-  UserHistoryResponse,
-  UserHistoryResponseData,
-  UserHistoryUpdateData
-}
+import com.raunakjodhawat.befit.dbschema.JsonEncoderDecoder._
+import com.raunakjodhawat.befit.dbschema.UserHistoryResponseData
+import com.raunakjodhawat.befit.dbschema.UserHistoryResponse
+import com.raunakjodhawat.befit.dbschema.UserHistoryIncomingData
+import com.raunakjodhawat.befit.dbschema.UserHistoryUpdateData
+
 import com.raunakjodhawat.befit.app.repository.{
   NutritionalInformationRepository,
   UserHistoryRepository
 }
-import com.raunakjodhawat.befit.app.models.JsonEncoderDecoder._
 import com.raunakjodhawat.befit.dbschema.user.JsonEncoderDecoder._
 import io.circe.syntax.EncoderOps
 import io.circe.parser.decode
