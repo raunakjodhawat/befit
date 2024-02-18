@@ -13,45 +13,25 @@ import zio.http._
 object Controller {
   def apply(db: ZIO[Any, Throwable, Database]): HttpApp[Database, Response] = {
     val base_path: Path = Root / "api" / "v1"
-    val sr = new SearchRepository(db)
-    val nir = new NutritionalInformationRepository(db)
     val ur = new UserRepository(db)
+    val uc = new UserController(ur, base_path)
+
     val uhr = new UserHistoryRepository(db)
+    val nir = new NutritionalInformationRepository(db)
+    val uhc = new UserHistoryController(uhr, nir, base_path)
+
+    val sr = new SearchRepository(db)
+
     val sc = new SearchController(sr)
-    val uc = new UserController(ur)
+    val nic = new NutritionalInformationController(nir)
 
-    Http
-      .collectZIO[Request] {
-        // Search flow
-        case Method.GET -> base_path / "search" / "ws" =>
-          sc.socketApp.toResponse
-        case Method.GET -> base_path / "search" / long(id) =>
-          sc.searchById(id)
-        // User flow
-        case req @ Method.POST -> base_path / "user" =>
-          uc.createUser(req.body)
-        case Method.GET -> base_path / "user" / long(id) =>
-          uc.getUserInfo(id)
-        case Method.DELETE -> base_path / "user" / long(id) =>
-          uc.deleteUserById(id)
-
-        case req @ Method.POST -> base_path / "history" =>
-          new UserHistoryController(uhr, nir).createNewUserHistory(req.body)
-        case req @ Method.PUT -> base_path / "history" =>
-          new UserHistoryController(uhr, nir).updateUserHistory(req.body)
-        case Method.GET -> base_path / "history" / long(id) / date =>
-          new UserHistoryController(uhr, nir).getUserHistoryForADay(id, date)
-
-        case req @ Method.POST -> base_path / "create" / "food" =>
-          new NutritionalInformationController(nir)
-            .createNewNutritionalInformation(req.body)
-      }
-      .mapError(err =>
-        Response(
-          status = Status.BadRequest,
-          headers = Headers(("Content-Type", "application/json")),
-          body = Body.fromString(err.getMessage)
-        )
+    (uc.userRouter ++ uhc.userHistoryRouter).mapError(err =>
+      Response(
+        status = Status.BadRequest,
+        headers = Headers(("Content-Type", "application/json")),
+        body = Body.fromString(err.getMessage)
       )
+    )
+
   }
 }
