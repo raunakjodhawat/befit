@@ -25,7 +25,7 @@ class NutritionalInformationController(
         getNutritionalInformationByCreator(creator)
       case req @ Method.POST -> basePath / "ni" =>
         createNewNutritionalInformation(req.body)
-      case Method.DELETE -> basePath / "nutritionalinformation" / long(
+      case Method.DELETE -> basePath / "ni" / long(
             id
           ) / "creator" / long(creator) =>
         deleteNutritionalInformation(id, creator)
@@ -41,16 +41,22 @@ class NutritionalInformationController(
             ZIO.fail(new Exception(s"Error decoding, ${error.getMessage}"))
           },
           nutrientInformation => {
-            nis.createNewNutritionalInformation(
-              nutrientInformation.name,
-              nutrientInformation.protein,
-              nutrientInformation.fat,
-              nutrientInformation.carbohydrate,
-              nutrientInformation.unit,
-              nutrientInformation.creator
-            ) *> ZIO.succeed(
-              Response.ok
-            )
+            nis
+              .createNewNutritionalInformation(
+                nutrientInformation.name,
+                nutrientInformation.protein,
+                nutrientInformation.fat,
+                nutrientInformation.carbohydrate,
+                nutrientInformation.unit,
+                nutrientInformation.creator
+              )
+              .fold(
+                _ => Response.status(Status.BadRequest),
+                newNutrientInformation =>
+                  Response.json(
+                    newNutrientInformation.asJson.toString()
+                  )
+              )
           }
         )
       )
@@ -59,16 +65,18 @@ class NutritionalInformationController(
   private def getNutritionalInformationById(
       id: Long
   ): ZIO[Database, Throwable, Response] = {
-    nis.getNutritionalInformationById(id).flatMap { nutrientInformation =>
-      ZIO.succeed(
-        Response.json(
-          nutrientInformation.asJson.toString()
-        )
+    nis
+      .getNutritionalInformationById(id)
+      .fold(
+        _ => Response.status(Status.NotFound),
+        nutrientInformation =>
+          Response.json(
+            nutrientInformation.asJson.toString()
+          )
       )
-    }
   }
 
-  def deleteNutritionalInformation(
+  private def deleteNutritionalInformation(
       id: Long,
       creator: Long
   ): ZIO[Database, Throwable, Response] = {
@@ -84,17 +92,15 @@ class NutritionalInformationController(
   private def getNutritionalInformationByCreator(
       creator: Long
   ): ZIO[Database, Throwable, Response] = {
-    nis.getNutritionalInformationByCreator(creator).flatMap {
-      case Seq() =>
-        ZIO.fail(
-          new Exception(s"Nutritional Information with $creator not found")
-        )
-      case nutrientInformation =>
-        ZIO.succeed(
+    nis
+      .getNutritionalInformationByCreator(creator)
+      .fold(
+        _ => Response.status(Status.NotFound),
+        nutrientInformation =>
           Response.json(
             nutrientInformation.asJson.toString()
           )
-        )
-    }
+      )
   }
+
 }

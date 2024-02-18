@@ -18,22 +18,23 @@ class NutritionalInformationRepository(dbZIO: ZIO[Any, Throwable, Database]) {
   ): ZIO[Database, Throwable, NutrientInformation] = {
     for {
       db <- dbZIO
-      newNutrientInformation <- ZIO.fromFuture { ex =>
-        db.run(
-          (nutrientInformation returning nutrientInformation)
-            .+=(
-              NutrientInformation(
-                id = 0,
-                name = name,
-                protein = protein,
-                fat = fat,
-                carbohydrate = carbs,
-                unit = unit,
-                creator = creator
+      newNutrientInformation <- ZIO
+        .fromFuture { ex =>
+          db.run(
+            (nutrientInformation returning nutrientInformation)
+              .+=(
+                NutrientInformation(
+                  id = 0,
+                  name = name,
+                  protein = protein,
+                  fat = fat,
+                  carbohydrate = carbs,
+                  unit = unit,
+                  creator = creator
+                )
               )
-            )
-        )
-      }
+          )
+        }
       _ <- ZIO.from(db.close())
     } yield newNutrientInformation
   }
@@ -69,6 +70,7 @@ class NutritionalInformationRepository(dbZIO: ZIO[Any, Throwable, Database]) {
         db.run(
           nutrientInformation
             .filter(_.creator === creator)
+            .take(100)
             .result
         )
       }
