@@ -59,6 +59,8 @@ object Controller {
           nic.getNutritionalInformationByCreator(creator)
         case req @ Method.POST -> Root / "api" / "v1" / "ni" =>
           nic.createNewNutritionalInformation(req.body)
+        case req @ Method.PUT -> Root / "api" / "v1" / "ni" =>
+          nic.updateNutritionalInformation(req.body)
         case Method.DELETE -> Root / "api" / "v1" / "ni" / long(
               id
             ) / "creator" / long(creator) =>

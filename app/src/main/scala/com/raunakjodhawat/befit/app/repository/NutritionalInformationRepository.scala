@@ -92,4 +92,32 @@ class NutritionalInformationRepository(dbZIO: ZIO[Any, Throwable, Database]) {
     }
     _ <- ZIO.from(db.close())
   } yield ()
+
+  def updateNutritionalInformation(
+      id: Long,
+      name: String,
+      protein: Option[Double],
+      fat: Option[Double],
+      carbs: Option[Double],
+      unit: String,
+      creator: Long
+  ): ZIO[Database, Throwable, NutrientInformation] = {
+    for {
+      db <- dbZIO
+      _ <- ZIO
+        .fromFuture { ex =>
+          db.run(
+            nutrientInformation
+              .filter(_.id === id)
+              .filter(_.creator === creator)
+              .map(ni =>
+                (ni.name, ni.protein, ni.fat, ni.carbohydrate, ni.unit)
+              )
+              .update((name, protein, fat, carbs, unit))
+          )
+        }
+        .fold(error => ZIO.fail(error), _ => getNutritionalInformationById(id))
+      _ <- ZIO.from(db.close())
+    } yield (NutrientInformation(id, name, protein, fat, carbs, unit, creator))
+  }
 }

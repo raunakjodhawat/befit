@@ -124,6 +124,32 @@ object NutritionalInformationSpec {
         )
     } yield ni_response
 
+  def updateNutritionalInformation(
+      ni: NutrientInformation
+  ): ZIO[Client, Throwable, NutrientInformation] = {
+    for {
+      client <- ZIO.service[Client]
+      _ <- ZIO.succeed(println("Updating Nutritional Information"))
+      updateNutritionalInformationResponse <- client
+        .url(createURL(basePath + s"/ni"))
+        .put(
+          "",
+          body = createBody(ni.asJson.toString())
+        )
+      _ <- ZIO.succeed(println("Nutritional Information update successful"))
+      ni_response <- updateNutritionalInformationResponse.body.asString
+        .map(decode[NutrientInformation])
+        .flatMap(
+          _.fold(
+            error => ZIO.fail(error),
+            ni => {
+              println("Successfully updated Nutritional Information " + ni.id)
+              ZIO.succeed(ni)
+            }
+          )
+        )
+    } yield ni_response
+  }
   def runNutritionalInformationFlow(
       c_id: Long
   ): ZIO[Client, Throwable, Unit] = {
@@ -131,6 +157,16 @@ object NutritionalInformationSpec {
       ni <- createNutritionalInformation(c_id)
       _ <- getNutritionalInformationByCreatorId(c_id)
       _ <- getNutritionalInformationById(ni.id)
+      updated_ni = ni.copy(name = "some-200", protein = Some(200))
+      _ <- updateNutritionalInformation(updated_ni)
+      update_ni_from_db <- getNutritionalInformationById(ni.id)
+      _ <- update_ni_from_db match {
+        case Some(ni) =>
+          if (ni.name == "some-200" && ni.protein.contains(200)) ZIO.succeed()
+          else ZIO.fail(new Exception("Nutritional Information not updated"))
+        case None =>
+          ZIO.fail(new Exception("Nutritional Information not found"))
+      }
       _ <- deleteNutritionalInformation(ni.id, c_id)
       response <- getNutritionalInformationById(ni.id)
         .fold(

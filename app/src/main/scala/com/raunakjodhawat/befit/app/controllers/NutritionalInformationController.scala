@@ -86,4 +86,36 @@ class NutritionalInformationController(
       )
   }
 
+  def updateNutritionalInformation(
+      body: Body
+  ): ZIO[Database, Throwable, Response] = {
+    body.asString
+      .map(decode[NutrientInformation])
+      .flatMap(
+        _.fold(
+          error => {
+            ZIO.fail(new Exception(s"Error decoding, ${error.getMessage}"))
+          },
+          nutrientInformation => {
+            nis
+              .updateNutritionalInformation(
+                nutrientInformation.id,
+                nutrientInformation.name,
+                nutrientInformation.protein,
+                nutrientInformation.fat,
+                nutrientInformation.carbohydrate,
+                nutrientInformation.unit,
+                nutrientInformation.creator
+              )
+              .fold(
+                _ => Response.status(Status.BadRequest),
+                updatedNutrientInformation =>
+                  Response.json(
+                    updatedNutrientInformation.asJson.toString()
+                  )
+              )
+          }
+        )
+      )
+  }
 }
