@@ -17,18 +17,23 @@ object Controller {
     val nir = new NutritionalInformationRepository(db)
     val ur = new UserRepository(db)
     val uhr = new UserHistoryRepository(db)
+    val sc = new SearchController(sr)
+    val uc = new UserController(ur)
+
     Http
       .collectZIO[Request] {
+        // Search flow
         case Method.GET -> base_path / "search" / "ws" =>
-          new SearchController(sr).socketApp.toResponse
+          sc.socketApp.toResponse
         case Method.GET -> base_path / "search" / long(id) =>
-          new SearchController(sr).searchById(id)
+          sc.searchById(id)
+        // User flow
         case req @ Method.POST -> base_path / "user" =>
-          new UserController(ur).createUser(req.body)
+          uc.createUser(req.body)
         case Method.GET -> base_path / "user" / long(id) =>
-          new UserController(ur).getUserInfo(id)
+          uc.getUserInfo(id)
         case Method.DELETE -> base_path / "user" / long(id) =>
-          new UserController(ur).deleteUserById(id)
+          uc.deleteUserById(id)
 
         case req @ Method.POST -> base_path / "history" =>
           new UserHistoryController(uhr, nir).createNewUserHistory(req.body)

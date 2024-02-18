@@ -16,7 +16,9 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion,
       "io.circe" %% "circe-parser" % circeVersion,
-      // internal dependency
+      // web socket
+      "net.domlom" %% "websocket-scala" % "0.0.3",
+// internal dependency
       "db-schema" %% "db-schema" % version.value
     )
   )

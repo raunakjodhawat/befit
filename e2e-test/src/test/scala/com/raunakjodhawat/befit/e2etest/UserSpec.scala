@@ -9,7 +9,7 @@ import io.circe.syntax.EncoderOps
 
 object UserSpec {
   val user: User = User(1)
-  def runUserFlow(client: Client): ZIO[Client, Throwable, Unit] = {
+  def runUserFlow: ZIO[Client, Throwable, Unit] = {
     for {
       client <- ZIO.service[Client]
       _ <- ZIO.succeed(println("Running user flow"))

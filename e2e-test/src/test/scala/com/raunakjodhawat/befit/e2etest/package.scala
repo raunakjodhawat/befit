@@ -4,7 +4,11 @@ import io.circe.parser.parse
 import zio.http.{Body, URL}
 
 package object e2etest {
-  val basePath = "http://localhost:8080/api/v1"
+  val httpProtocol = "http"
+  val wsProtocol = "ws"
+  val base = "localhost:8080/api/v1"
+  val basePath = httpProtocol + "://" + base
+  val wsBasePath = wsProtocol + "://" + base
   def createURL(url: String): URL = URL.decode(url).toOption.get
 
   def createBody(body: String): Body =
