@@ -4,3 +4,4 @@ project/project
 project/target
 target
 db-loader/src/main/resources/raw.json
+db
