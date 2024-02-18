@@ -12,29 +12,65 @@ import zio.http._
 
 object Controller {
   def apply(db: ZIO[Any, Throwable, Database]): HttpApp[Database, Response] = {
-    val base_path: Path = Root / "api" / "v1"
     val ur = new UserRepository(db)
-    val uc = new UserController(ur, base_path)
+    val uc = new UserController(ur)
 
     val uhr = new UserHistoryRepository(db)
     val nir = new NutritionalInformationRepository(db)
-    val uhc = new UserHistoryController(uhr, nir, base_path)
+    val uhc = new UserHistoryController(uhr, nir)
 
     val sr = new SearchRepository(db)
-    val sc = new SearchController(sr, base_path)
+    val sc = new SearchController(sr)
 
-    val nic = new NutritionalInformationController(nir, base_path)
+    val nic = new NutritionalInformationController(nir)
 
-    (
-      uc.userRouter ++ uhc.userHistoryRouter ++ sc.searchRouter ++
-        nic.nutritionalInformationRouter
-    ).mapError(err =>
-      Response(
-        status = Status.BadRequest,
-        headers = Headers(("Content-Type", "application/json")),
-        body = Body.fromString(err.getMessage)
+    Http
+      .collectZIO[Request] {
+        case Method.GET -> Root / "api" / "v1" / "user" / long(id) =>
+          uc.getUser(id)
+        case req @ Method.POST -> Root / "api" / "v1" / "user" =>
+          uc.createUser(req.body)
+        case Method.DELETE -> Root / "api" / "v1" / "user" / long(id) =>
+          uc.deleteUserById(id)
+
+        case Method.GET -> Root / "api" / "v1" / "history" / long(
+              userId
+            ) / date =>
+          uhc.getUserHistoryForADay(userId, date)
+        case Method.GET -> Root / "api" / "v1" / "history" / long(u_h_id) =>
+          uhc.getUserHistoryById(u_h_id)
+        case Method.DELETE -> Root / "api" / "v1" / "history" / long(
+              u_h_id
+            ) / "user" / long(userId) =>
+          uhc.deleteHistoryByIdAndCreator(u_h_id, userId)
+        case req @ Method.POST -> Root / "api" / "v1" / "history" =>
+          uhc.createHistory(req.body)
+        case req @ Method.PUT -> Root / "api" / "v1" / "history" =>
+          uhc.updateHistory(req.body)
+
+        case Method.GET -> Root / "api" / "v1" / "search" / "ws" =>
+          sc.socketApp.toResponse
+
+        case Method.GET -> Root / "api" / "v1" / "ni" / long(id) =>
+          nic.getNutritionalInformationById(id)
+        case Method.GET -> Root / "api" / "v1" / "ni" / "creator" / long(
+              creator
+            ) =>
+          nic.getNutritionalInformationByCreator(creator)
+        case req @ Method.POST -> Root / "api" / "v1" / "ni" =>
+          nic.createNewNutritionalInformation(req.body)
+        case Method.DELETE -> Root / "api" / "v1" / "ni" / long(
+              id
+            ) / "creator" / long(creator) =>
+          nic.deleteNutritionalInformation(id, creator)
+      }
+      .mapError(err =>
+        Response(
+          status = Status.BadRequest,
+          headers = Headers(("Content-Type", "application/json")),
+          body = Body.fromString(err.getMessage)
+        )
       )
-    )
 
   }
 }

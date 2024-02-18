@@ -14,15 +14,9 @@ import zio.http._
 import io.circe.syntax._
 
 class SearchController(
-    sr: SearchRepository,
-    basePath: Path
+    sr: SearchRepository
 ) {
-  val searchRouter: Http[Database, Throwable, Request, Response] = Http
-    .collectZIO[Request] { case Method.GET -> basePath / "search" / "ws" =>
-      socketApp.toResponse
-    }
-  private val socketApp
-      : Handler[Database, Throwable, WebSocketChannel, Nothing] =
+  val socketApp: Handler[Database, Throwable, WebSocketChannel, Nothing] =
     Handler.webSocket { channel =>
       channel.receiveAll {
         case Read(WebSocketFrame.Text(text)) => {

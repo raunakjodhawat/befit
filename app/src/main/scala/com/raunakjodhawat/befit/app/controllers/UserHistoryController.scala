@@ -20,27 +20,9 @@ import zio.http._
 
 class UserHistoryController(
     uhr: UserHistoryRepository,
-    nir: NutritionalInformationRepository,
-    basePath: Path
+    nir: NutritionalInformationRepository
 ) {
-  val userHistoryRouter: Http[Database, Throwable, Request, Response] = Http
-    .collectZIO[Request] {
-      case Method.GET -> basePath / "history" / long(
-            userId
-          ) / "history" / date =>
-        getUserHistoryForADay(userId, date)
-      case Method.GET -> basePath / "history" / long(u_h_id) =>
-        getUserHistoryById(u_h_id)
-      case Method.DELETE -> basePath / "history" / long(
-            u_h_id
-          ) / "user" / long(userId) =>
-        deleteHistoryByIdAndCreator(u_h_id, userId)
-      case req @ Method.POST -> basePath / "history" =>
-        createHistory(req.body)
-      case req @ Method.PUT -> basePath / "history" =>
-        updateHistory(req.body)
-    }
-  private def createHistory(
+  def createHistory(
       body: Body
   ): ZIO[Database, Throwable, Response] = {
     body.asString
@@ -51,17 +33,22 @@ class UserHistoryController(
             ZIO.fail(new Exception(s"Error decoding, ${error.getMessage}"))
           },
           userHistory => {
-            uhr.createNewUserHistory(
-              u_id = userHistory.u_id,
-              ni_id = userHistory.ni_id,
-              quantity = userHistory.quantity
-            ) *> ZIO.succeed(Response.json(userHistory.asJson.toString()))
+            uhr
+              .createNewUserHistory(
+                u_id = userHistory.u_id,
+                ni_id = userHistory.ni_id,
+                quantity = userHistory.quantity
+              )
+              .fold(
+                _ => Response.status(Status.BadRequest),
+                newHistory => Response.json(newHistory.asJson.toString())
+              )
           }
         )
       )
   }
 
-  private def updateHistory(
+  def updateHistory(
       body: Body
   ): ZIO[Database, Throwable, Response] = {
     body.asString
@@ -83,7 +70,7 @@ class UserHistoryController(
       )
   }
 
-  private def getUserHistoryForADay(
+  def getUserHistoryForADay(
       userId: Long,
       date: String
   ): ZIO[Database, Throwable, Response] = {
@@ -126,13 +113,18 @@ class UserHistoryController(
     }
   }
 
-  private def getUserHistoryById(
+  def getUserHistoryById(
       u_h_id: Long
   ): ZIO[Database, Throwable, Response] = {
-    uhr.getUserHistoryById(u_h_id).map(x => Response.json(x.asJson.toString()))
+    uhr
+      .getUserHistoryById(u_h_id)
+      .fold(
+        _ => Response.status(Status.NotFound),
+        userHistory => Response.json(userHistory.asJson.toString())
+      )
   }
 
-  private def deleteHistoryByIdAndCreator(
+  def deleteHistoryByIdAndCreator(
       u_h_id: Long,
       u_id: Long
   ): ZIO[Database, Throwable, Response] = {

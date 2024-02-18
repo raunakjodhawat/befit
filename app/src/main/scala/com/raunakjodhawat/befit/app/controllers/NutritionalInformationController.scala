@@ -11,26 +11,9 @@ import zio._
 import zio.http._
 
 class NutritionalInformationController(
-    nis: NutritionalInformationRepository,
-    basePath: Path
+    nis: NutritionalInformationRepository
 ) {
-  val nutritionalInformationRouter
-      : Http[Database, Throwable, Request, Response] = Http
-    .collectZIO[Request] {
-      case Method.GET -> basePath / "ni" / long(id) =>
-        getNutritionalInformationById(id)
-      case Method.GET -> basePath / "ni" / "creator" / long(
-            creator
-          ) =>
-        getNutritionalInformationByCreator(creator)
-      case req @ Method.POST -> basePath / "ni" =>
-        createNewNutritionalInformation(req.body)
-      case Method.DELETE -> basePath / "ni" / long(
-            id
-          ) / "creator" / long(creator) =>
-        deleteNutritionalInformation(id, creator)
-    }
-  private def createNewNutritionalInformation(
+  def createNewNutritionalInformation(
       body: Body
   ): ZIO[Database, Throwable, Response] = {
     body.asString
@@ -62,7 +45,7 @@ class NutritionalInformationController(
       )
   }
 
-  private def getNutritionalInformationById(
+  def getNutritionalInformationById(
       id: Long
   ): ZIO[Database, Throwable, Response] = {
     nis
@@ -76,7 +59,7 @@ class NutritionalInformationController(
       )
   }
 
-  private def deleteNutritionalInformation(
+  def deleteNutritionalInformation(
       id: Long,
       creator: Long
   ): ZIO[Database, Throwable, Response] = {
@@ -89,7 +72,7 @@ class NutritionalInformationController(
       }
   }
 
-  private def getNutritionalInformationByCreator(
+  def getNutritionalInformationByCreator(
       creator: Long
   ): ZIO[Database, Throwable, Response] = {
     nis

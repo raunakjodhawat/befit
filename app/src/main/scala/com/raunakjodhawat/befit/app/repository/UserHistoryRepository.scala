@@ -82,8 +82,7 @@ class UserHistoryRepository(dbZIO: ZIO[Any, Throwable, Database]) {
     _ <- ZIO.fromFuture { ex =>
       db.run(
         userHistoryTable
-          .filter(_.id === u_h_id)
-          .filter(_.u_id === u_id)
+          .filter(x => x.id === u_h_id && x.u_id === u_id)
           .delete
       )
     }
