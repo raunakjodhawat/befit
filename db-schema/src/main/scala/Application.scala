@@ -1,0 +1,1 @@
+object Application extends App {}

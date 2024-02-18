@@ -18,6 +18,11 @@ lazy val appModule = (project in file("app"))
   )
   .dependsOn(dbSchemaModule)
 
+lazy val e2eTestModule = (project in file("e2e-test"))
+  .settings(
+    name := "e2e-test"
+  )
+  .dependsOn(appModule, dbLoaderModule, dbSchemaModule)
 lazy val root = (project in file("."))
   .settings(
     name := "befit",
