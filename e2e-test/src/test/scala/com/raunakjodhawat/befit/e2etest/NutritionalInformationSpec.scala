@@ -26,7 +26,7 @@ object NutritionalInformationSpec {
       client <- ZIO.service[Client]
       _ <- ZIO.succeed(println("Creating Nutritional Information"))
       createNutritionalInformationResponse <- client
-        .url(createURL(basePath + "/create/food"))
+        .url(createURL(basePath + "/ni"))
         .post(
           "",
           body = createBody(ni.asJson.toString())
@@ -54,7 +54,7 @@ object NutritionalInformationSpec {
       client <- ZIO.service[Client]
       _ <- ZIO.succeed(println("Deleting Nutritional Information"))
       _ <- client
-        .url(createURL(basePath + s"/food/$n_id/$c_id"))
+        .url(createURL(basePath + s"/ni/$n_id/creator/$c_id"))
         .delete
         .mapError(error =>
           new Exception(
@@ -71,7 +71,7 @@ object NutritionalInformationSpec {
       client <- ZIO.service[Client]
       _ <- ZIO.succeed(println("Getting Nutritional Information"))
       getNutritionalInformationResponse <- client
-        .url(createURL(basePath + s"/user/food/$c_id"))
+        .url(createURL(basePath + s"/ni/creator/$c_id"))
         .get
         .mapError(error =>
           new Exception(
@@ -80,10 +80,42 @@ object NutritionalInformationSpec {
         )
       _ <- ZIO.succeed(println("Nutritional Information get successful"))
       ni_response <- getNutritionalInformationResponse.body.asString
+        .map(decode[Seq[NutrientInformation]])
+        .flatMap(
+          _.fold(
+            _ => ZIO.fail(new Exception("Nutritional Information not found")),
+            ni => {
+              println("Successfully got Nutritional Information " + ni.head.id)
+              ZIO.succeed(Some(ni.head))
+            }
+          )
+        )
+    } yield ni_response
+
+  def getNutritionalInformationById(
+      n_id: Long
+  ): ZIO[Client, Throwable, Option[NutrientInformation]] =
+    for {
+      client <- ZIO.service[Client]
+      _ <- ZIO.succeed(
+        println("Getting Nutritional Information")
+      )
+      getNutritionalInformationResponse <- client
+        .url(createURL(basePath + s"/ni/$n_id"))
+        .get
+        .mapError(error =>
+          new Exception(
+            s"Error getting Nutritional Information, ${error.getMessage}"
+          )
+        )
+      _ <- ZIO.succeed(
+        println("Nutritional Information get successful")
+      )
+      ni_response <- getNutritionalInformationResponse.body.asString
         .map(decode[NutrientInformation])
         .flatMap(
           _.fold(
-            _ => ZIO.succeed(None),
+            _ => ZIO.fail(new Exception("Nutritional Information not found")),
             ni => {
               println("Successfully got Nutritional Information " + ni.id)
               ZIO.succeed(Some(ni))
@@ -91,5 +123,22 @@ object NutritionalInformationSpec {
           )
         )
     } yield ni_response
+
+  def runNutritionalInformationFlow(
+      c_id: Long
+  ): ZIO[Client, Throwable, Unit] = {
+    for {
+      ni <- createNutritionalInformation(c_id)
+      _ <- getNutritionalInformationByCreatorId(c_id)
+      _ <- getNutritionalInformationById(ni.id)
+      _ <- deleteNutritionalInformation(ni.id, c_id)
+      response <- getNutritionalInformationById(ni.id)
+        .fold(
+          _ => ZIO.succeed(),
+          _ => ZIO.fail(new Exception("Nutritional Information not deleted"))
+        )
+    } yield response
+
+  }
 
 }

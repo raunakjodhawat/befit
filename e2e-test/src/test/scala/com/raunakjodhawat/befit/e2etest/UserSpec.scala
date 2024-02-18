@@ -66,6 +66,10 @@ object UserSpec {
       userId <- createUser
       _ <- getUserById(userId)
       _ <- deleteUserById(userId)
+      _ <- getUserById(userId).fold(
+        _ => ZIO.succeed(()),
+        _ => ZIO.fail(new Exception("User not deleted"))
+      )
     } yield ()
   }
 }

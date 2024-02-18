@@ -8,7 +8,6 @@ import scala.util.{Failure, Success}
 import io.circe.parser.decode
 import net.domlom.websocket._
 import net.domlom.websocket.model.Websocket
-import zio.http.Client
 
 import scala.util.Try
 
@@ -43,44 +42,6 @@ class SearchSpec {
         else {
           println(s"Records returned: $recordsReturned")
           Success(recordsReturned)
-        }
-    } yield ()
-  }
-
-  def runSearchFlow: ZIO[Client, Throwable, Unit] = {
-    for {
-      client <- ZIO.service[Client]
-      _ <- ZIO.succeed(println("Running search flow"))
-      userId <- UserSpec.createUser
-      ni <- NutritionalInformationSpec.createNutritionalInformation(userId)
-      searchResponse <- client
-        .url(createURL(basePath + s"/search/$userId"))
-        .get
-        .mapError(error =>
-          new Exception(s"Error searching, ${error.getMessage}")
-        )
-      _ <- ZIO.succeed(println("Search successful"))
-      _ <- searchResponse.body.asString
-        .map(decode[Seq[NutrientInformation]])
-        .flatMap(
-          _.fold(
-            error => ZIO.fail(error),
-            value => {
-              println(s"Records returned: ${value.length}")
-              ZIO.succeed(value)
-            }
-          )
-        )
-      _ <- UserSpec.deleteUserById(userId)
-      _ <- NutritionalInformationSpec.deleteNutritionalInformation(ni.id)
-      _ <- NutritionalInformationSpec
-        .getNutritionalInformationById(
-          ni.id
-        )
-        .map {
-          case Some(_) =>
-            throw new Exception("Nutritional Information not deleted")
-          case None => ()
         }
     } yield ()
   }
