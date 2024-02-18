@@ -21,11 +21,14 @@ object Controller {
     val uhc = new UserHistoryController(uhr, nir, base_path)
 
     val sr = new SearchRepository(db)
+    val sc = new SearchController(sr, base_path)
 
-    val sc = new SearchController(sr)
-    val nic = new NutritionalInformationController(nir)
+    val nic = new NutritionalInformationController(nir, base_path)
 
-    (uc.userRouter ++ uhc.userHistoryRouter).mapError(err =>
+    (
+      uc.userRouter ++ uhc.userHistoryRouter ++ sc.searchRouter ++
+        nic.nutritionalInformationRouter
+    ).mapError(err =>
       Response(
         status = Status.BadRequest,
         headers = Headers(("Content-Type", "application/json")),

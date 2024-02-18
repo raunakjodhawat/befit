@@ -1,9 +1,6 @@
 package com.raunakjodhawat.befit.app.controllers
 
-import com.raunakjodhawat.befit.app.repository.{
-  NutritionalInformationRepository,
-  SearchRepository
-}
+import com.raunakjodhawat.befit.app.repository.SearchRepository
 import com.raunakjodhawat.befit.dbschema.nutrientinformation.JsonEncoderDecoder._
 import slick.jdbc.PostgresProfile.api._
 import zio._
@@ -16,23 +13,16 @@ import zio.http.ChannelEvent.{
 import zio.http._
 import io.circe.syntax._
 
-import scala.util.{Success, Try}
-import slick.jdbc.PostgresProfile.api._
-import zio._
-import zio.http._
 class SearchController(
     sr: SearchRepository,
-    nir: NutritionalInformationRepository,
     basePath: Path
 ) {
   val searchRouter: Http[Database, Throwable, Request, Response] = Http
-    .collectZIO[Request] {
-      case Method.GET -> basePath / "search" / "ws" / string(prefix) =>
-        searchByPrefix(prefix).map(Response.json(_))
-      case Method.GET -> basePath / "search" / "id" / long(id) =>
-        searchById(id)
+    .collectZIO[Request] { case Method.GET -> basePath / "search" / "ws" =>
+      socketApp.toResponse
     }
-  val socketApp: Handler[Database, Throwable, WebSocketChannel, Nothing] =
+  private val socketApp
+      : Handler[Database, Throwable, WebSocketChannel, Nothing] =
     Handler.webSocket { channel =>
       channel.receiveAll {
         case Read(WebSocketFrame.Text(text)) => {
@@ -61,11 +51,5 @@ class SearchController(
     }
   private def searchByPrefix(text: String): ZIO[Database, Throwable, String] = {
     sr.searchByPrefix(text).map(_.asJson.toString())
-  }
-
-  def searchById(text: Long): ZIO[Database, Throwable, Response] = {
-    for {
-      u <- nir.getNutritionalInformationById(text)
-    } yield Response.json(u.asJson.toString())
   }
 }

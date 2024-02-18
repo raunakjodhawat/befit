@@ -10,8 +10,27 @@ import slick.jdbc.PostgresProfile.api._
 import zio._
 import zio.http._
 
-class NutritionalInformationController(nis: NutritionalInformationRepository) {
-  def createNewNutritionalInformation(
+class NutritionalInformationController(
+    nis: NutritionalInformationRepository,
+    basePath: Path
+) {
+  val nutritionalInformationRouter
+      : Http[Database, Throwable, Request, Response] = Http
+    .collectZIO[Request] {
+      case Method.GET -> basePath / "ni" / long(id) =>
+        getNutritionalInformationById(id)
+      case Method.GET -> basePath / "ni" / "creator" / long(
+            creator
+          ) =>
+        getNutritionalInformationByCreator(creator)
+      case req @ Method.POST -> basePath / "ni" =>
+        createNewNutritionalInformation(req.body)
+      case Method.DELETE -> basePath / "nutritionalinformation" / long(
+            id
+          ) / "creator" / long(creator) =>
+        deleteNutritionalInformation(id, creator)
+    }
+  private def createNewNutritionalInformation(
       body: Body
   ): ZIO[Database, Throwable, Response] = {
     body.asString
@@ -37,7 +56,7 @@ class NutritionalInformationController(nis: NutritionalInformationRepository) {
       )
   }
 
-  def getNutritionalInformationById(
+  private def getNutritionalInformationById(
       id: Long
   ): ZIO[Database, Throwable, Response] = {
     nis.getNutritionalInformationById(id).flatMap { nutrientInformation =>
@@ -62,7 +81,7 @@ class NutritionalInformationController(nis: NutritionalInformationRepository) {
       }
   }
 
-  def getNutritionalInformationByCreator(
+  private def getNutritionalInformationByCreator(
       creator: Long
   ): ZIO[Database, Throwable, Response] = {
     nis.getNutritionalInformationByCreator(creator).flatMap {

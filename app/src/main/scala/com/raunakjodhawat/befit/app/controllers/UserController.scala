@@ -5,9 +5,8 @@ import com.raunakjodhawat.befit.dbschema.user.JsonEncoderDecoder._
 import com.raunakjodhawat.befit.dbschema.user.User
 import zio._
 import zio.http._
-import io.circe.parser.decode
+import io.circe.parser.{decode, parse}
 import io.circe.syntax.EncoderOps
-
 import slick.jdbc.PostgresProfile.api._
 
 class UserController(ur: UserRepository, basePath: Path) {
@@ -40,7 +39,11 @@ class UserController(ur: UserRepository, basePath: Path) {
   }
 
   private def getUser(id: Long): ZIO[Database, Throwable, Response] =
-    ur.getUserById(id).map(user => Response.json(user.asJson.toString()))
+    ur.getUserById(id)
+      .fold(
+        _ => Response.status(Status.NotFound),
+        user => Response.json(user.asJson.toString())
+      )
 
   private def deleteUserById(id: Long): ZIO[Database, Throwable, Response] = {
     ur.deleteUser(id).map(_ => Response.ok)
