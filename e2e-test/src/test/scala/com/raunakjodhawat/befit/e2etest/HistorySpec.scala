@@ -2,7 +2,6 @@ package com.raunakjodhawat.befit.e2etest
 
 import com.raunakjodhawat.befit.dbschema.{
   UserHistoryIncomingData,
-  UserHistoryResponseData,
   UserHistoryUpdateData
 }
 import com.raunakjodhawat.befit.dbschema.JsonEncoderDecoder._
