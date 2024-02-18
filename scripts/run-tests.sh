@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-docker-compose up --exit-code-from api --abort-on-container-exit
+docker-compose up --exit-code-from e2e-test --abort-on-container-exit
