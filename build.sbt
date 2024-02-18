@@ -22,7 +22,7 @@ lazy val e2eTestModule = (project in file("e2e-test"))
   .settings(
     name := "e2e-test"
   )
-  .dependsOn(appModule, dbLoaderModule, dbSchemaModule)
+  .dependsOn(appModule, dbSchemaModule)
 lazy val root = (project in file("."))
   .settings(
     name := "befit",
