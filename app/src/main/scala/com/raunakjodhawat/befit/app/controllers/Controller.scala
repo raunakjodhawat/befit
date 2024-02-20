@@ -31,6 +31,8 @@ object Controller {
           am.authenticator(req.headers) *> uc.getUser(id)
         case req @ Method.POST -> Root / "api" / "v1" / "user" =>
           uc.createUser(req.body)
+        case req @ Method.GET -> Root / "api" / "v1" / "user" =>
+          am.authenticator(req.headers)
         case Method.DELETE -> Root / "api" / "v1" / "user" / long(id) =>
           uc.deleteUserById(id)
 
