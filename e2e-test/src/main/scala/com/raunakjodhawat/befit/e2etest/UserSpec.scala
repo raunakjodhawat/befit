@@ -9,11 +9,37 @@ import com.raunakjodhawat.befit.dbschema.user.{
 import io.circe.parser.decode
 import io.circe.syntax.EncoderOps
 import zio._
+import zio.http.Header.Authorization
 import zio.http._
 
 object UserSpec {
   val user: IncomingCreateUser =
     IncomingCreateUser("testUser", "testUser")
+
+  val authHeader: Header = Header.Authorization.Bearer(
+    "Bearer " + java.util.Base64.getEncoder.encodeToString(
+      "testUser:testUser".getBytes
+    )
+  )
+
+  def isUserLoggedIn: ZIO[Client, Throwable, Long] = {
+    for {
+      client <- ZIO.service[Client]
+      _ <- ZIO.succeed(println("Checking if user is logged in"))
+      _ <- client
+        .url(createURL(basePath + "/user"))
+        .addHeader(authHeader)
+        .get
+        .mapError(error =>
+          new Exception(
+            s"Error checking if user is logged in, ${error.getMessage}"
+          )
+        )
+      _ <- ZIO.succeed(
+        println("User is logged in")
+      )
+    } yield 0L
+  }
 
   def createUser: ZIO[Client, Throwable, Long] = {
     for {
@@ -70,6 +96,7 @@ object UserSpec {
     for {
       userId <- createUser
       _ <- getUserById(userId)
+      _ <- isUserLoggedIn
       _ <- deleteUserById(userId)
       _ <- getUserById(userId).fold(
         _ => ZIO.succeed(()),
