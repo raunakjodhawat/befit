@@ -23,7 +23,7 @@ object dbSetup {
     TableQuery[UserTable]
   val userHistoryTable: TableQuery[UserHistoryTable] =
     TableQuery[UserHistoryTable]
-  private val adminUser: User = User(1L)
+  private val adminUser: User = User(1L, "admin", "admin", "admin")
 
   @unused
   def initialize: ZIO[Any, Throwable, Database] = clearDB *> createDB

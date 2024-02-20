@@ -1,5 +1,6 @@
 package com.raunakjodhawat.befit.app.controllers
 
+import com.raunakjodhawat.befit.app.middleware.AuthMiddleware
 import com.raunakjodhawat.befit.app.repository.{
   NutritionalInformationRepository,
   SearchRepository,
@@ -17,17 +18,17 @@ object Controller {
 
     val uhr = new UserHistoryRepository(db)
     val nir = new NutritionalInformationRepository(db)
-    val uhc = new UserHistoryController(uhr, nir)
 
+    val am = new AuthMiddleware(ur)
+    val uhc = new UserHistoryController(uhr, nir)
     val sr = new SearchRepository(db)
     val sc = new SearchController(sr)
-
     val nic = new NutritionalInformationController(nir)
 
     Http
       .collectZIO[Request] {
-        case Method.GET -> Root / "api" / "v1" / "user" / long(id) =>
-          uc.getUser(id)
+        case req @ Method.GET -> Root / "api" / "v1" / "user" / long(id) =>
+          am.authenticator(req.headers) *> uc.getUser(id)
         case req @ Method.POST -> Root / "api" / "v1" / "user" =>
           uc.createUser(req.body)
         case Method.DELETE -> Root / "api" / "v1" / "user" / long(id) =>

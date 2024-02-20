@@ -18,4 +18,14 @@ object JsonEncoderDecoder {
   implicit val userHistoryDecoder: Decoder[UserHistory] =
     deriveDecoder[UserHistory]
 
+  implicit val incomingCreateUserEncoder: Encoder[IncomingCreateUser] =
+    deriveEncoder[IncomingCreateUser]
+  implicit val incomingCreateUserDecoder: Decoder[IncomingCreateUser] =
+    deriveDecoder[IncomingCreateUser]
+
+  implicit val outgoingCreateUserEncoder: Encoder[OutgoingCreateUser] =
+    deriveEncoder[OutgoingCreateUser]
+  implicit val outgoingCreateUserDecoder: Decoder[OutgoingCreateUser] =
+    deriveDecoder[OutgoingCreateUser]
+
 }
