@@ -31,7 +31,7 @@ object Application extends ZIOAppDefault {
           NutritionalInformationSpec.createNutritionalInformation(1)
         )
       )
-      .provide(ZLayer.fromZIO(dbSetup.dbZIO), Client.default) *> program
+      .provide(Client.default) *> program
       .provide(
         Client.default
       )

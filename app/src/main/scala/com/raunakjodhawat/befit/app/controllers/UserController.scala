@@ -2,7 +2,8 @@ package com.raunakjodhawat.befit.app.controllers
 
 import com.raunakjodhawat.befit.app.repository.UserRepository
 import com.raunakjodhawat.befit.dbschema.user.JsonEncoderDecoder._
-import com.raunakjodhawat.befit.dbschema.user.User
+import com.raunakjodhawat.befit.dbschema.user.IncomingCreateUser
+
 import zio._
 import zio.http._
 import io.circe.parser.decode
@@ -14,14 +15,14 @@ class UserController(ur: UserRepository) {
       body: Body
   ): ZIO[Database, Throwable, Response] = {
     body.asString
-      .map(decode[User])
+      .map(decode[IncomingCreateUser])
       .flatMap(
         _.fold(
           error => {
             ZIO.fail(new Exception(s"Error decoding, ${error.getMessage}"))
           },
           user => {
-            ur.createUser(user.id)
+            ur.createUser(user.username, user.password)
               .map(newUser => Response.json(newUser.asJson.toString()))
           }
         )

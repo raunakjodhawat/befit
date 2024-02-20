@@ -1,14 +1,19 @@
 package com.raunakjodhawat.befit.e2etest
 
 import com.raunakjodhawat.befit.dbschema.user.JsonEncoderDecoder._
-import com.raunakjodhawat.befit.dbschema.user.User
+import com.raunakjodhawat.befit.dbschema.user.{
+  IncomingCreateUser,
+  OutgoingCreateUser,
+  User
+}
 import io.circe.parser.decode
 import io.circe.syntax.EncoderOps
 import zio._
 import zio.http._
 
 object UserSpec {
-  val user: User = User(1)
+  val user: IncomingCreateUser =
+    IncomingCreateUser("testUser", "testUser")
 
   def createUser: ZIO[Client, Throwable, Long] = {
     for {
@@ -22,7 +27,7 @@ object UserSpec {
         )
       _ <- ZIO.succeed(println("User creation successful"))
       userId <- createUserResponse.body.asString
-        .map(decode[User])
+        .map(decode[OutgoingCreateUser])
         .flatMap(
           _.fold(error => ZIO.fail(error), user => ZIO.succeed(user.id))
         )
